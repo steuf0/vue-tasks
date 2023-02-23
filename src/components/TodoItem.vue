@@ -11,7 +11,7 @@ const props = defineProps({
   },
 });
 
-defineEmits(['toggle-complete', 'edit-todo']);
+defineEmits(['toggle-complete', 'edit-todo', 'update-todo', 'delete-todo']);
 </script>
 
 <template>
@@ -22,7 +22,12 @@ defineEmits(['toggle-complete', 'edit-todo']);
       @input="$emit('toggle-complete', index)"
     />
     <div class="todo">
-      <input v-if="todo.isEditing" type="text" :value="todo.todo" />
+      <input
+        v-if="todo.isEditing"
+        type="text"
+        :value="todo.todo"
+        @input="$emit('update-todo', $event.target.value, index)"
+      />
       <span v-else :class="{ completed: todo.isCompleted }">{{
         todo.todo
       }}</span>
@@ -35,6 +40,7 @@ defineEmits(['toggle-complete', 'edit-todo']);
         class="icon"
         color="#41b080"
         width="22"
+        @click="$emit('edit-todo', index)"
       />
       <Icon
         v-else
@@ -44,7 +50,13 @@ defineEmits(['toggle-complete', 'edit-todo']);
         width="22"
         @click="$emit('edit-todo', index)"
       />
-      <Icon icon="ph:trash" class="icon" color="#f95e5e" width="22" />
+      <Icon
+        icon="ph:trash"
+        class="icon"
+        color="#f95e5e"
+        width="22"
+        @click="$emit('delete-todo', todo.id)"
+      />
     </div>
   </li>
 </template>
@@ -58,6 +70,7 @@ li {
   background-color: #f1f1f1;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
     0 8px 10px -6px rgb(0 0 0 / 0.1);
+  min-height: 64px;
   &:hover {
     .todo-actions {
       opacity: 1;

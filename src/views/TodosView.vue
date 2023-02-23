@@ -5,7 +5,24 @@ import { ref } from 'vue';
 import TodoItem from '../components/TodoItem.vue';
 import { Icon } from '@iconify/vue';
 
+//reactive value
 const todoList = ref([]);
+
+//gets list from Local Storage
+const fetchFromLocalStorage = () => {
+  const storedList = JSON.parse(localStorage.getItem('todoList'));
+
+  if (storedList) {
+    todoList.value = storedList;
+  }
+};
+
+fetchFromLocalStorage();
+
+//sets list to Local Storage
+const setToLocalStorage = () => {
+  localStorage.setItem('todoList', JSON.stringify(todoList.value));
+};
 
 const createTodo = (todo) => {
   todoList.value.push({
@@ -14,10 +31,32 @@ const createTodo = (todo) => {
     isCompleted: null,
     isEditing: null,
   });
+
+  setToLocalStorage();
 };
 
+//toggle task completed
 const toggleCompletion = (position) => {
   todoList.value[position].isCompleted = !todoList.value[position].isCompleted;
+  setToLocalStorage();
+};
+
+//toggle edit value (input)
+const toggleEdit = (position) => {
+  todoList.value[position].isEditing = !todoList.value[position].isEditing;
+  setToLocalStorage();
+};
+
+//change task title
+const updateTodo = (newValue, position) => {
+  todoList.value[position].todo = newValue;
+  setToLocalStorage();
+};
+
+//delete task
+const deleteTodo = (id) => {
+  todoList.value = todoList.value.filter((task) => task.id !== id);
+  setToLocalStorage();
 };
 </script>
 
@@ -32,11 +71,14 @@ const toggleCompletion = (position) => {
         :todo="todo"
         :index="index"
         @toggle-complete="toggleCompletion"
+        @edit-todo="toggleEdit"
+        @update-todo="updateTodo"
+        @delete-todo="deleteTodo"
       />
     </ul>
-    <p class="todos-msg" v-else>
+    <p class="no-tasks" v-else>
       <Icon icon="emojione:sad-but-relieved-face" width="22" />
-      <span>Você não tem tarefas para realizar! Adicione uma!</span>
+      <span>Você não tem tarefas a fazer. Adicione uma!</span>
     </p>
   </main>
 </template>
@@ -57,7 +99,7 @@ main {
     margin-top: 24px;
     gap: 20px;
   }
-  .todos-msg {
+  .no-tasks {
     display: flex;
     align-items: center;
     justify-content: center;
