@@ -25,7 +25,7 @@ nav {
     width: 32px;
   }
   span {
-    font-weight: bold;
+    font-weight: 500;
   }
 }
 </style>

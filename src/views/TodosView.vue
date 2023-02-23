@@ -1,14 +1,31 @@
 <script setup>
-import TodoCreator from '../components/TodoCreator.vue';
+import { ref, watch, computed } from 'vue';
 import { uid } from 'uid';
-import { ref } from 'vue';
+import TodoCreator from '../components/TodoCreator.vue';
 import TodoItem from '../components/TodoItem.vue';
 import { Icon } from '@iconify/vue';
 
-//reactive value
+// reactive data
 const todoList = ref([]);
 
-//gets list from Local Storage
+// listens for changes in reactive data (todoList) and executes the function inside it
+// "deep" option is needed to detect property changes because todoList is an array of objects
+watch(
+  todoList,
+  () => {
+    setToLocalStorage();
+  },
+  { deep: true }
+);
+
+// computed function simplifies complex logic in reactive data in order to de-clutter the template
+// it tracks reactive data automatically and listens for any and every change
+// by doing this you won't need to use ternary operators or such directly on the template, which is nice
+const todoCompleted = computed(() => {
+  return todoList.value.every((task) => task.isCompleted);
+});
+
+// gets list from Local Storage
 const fetchFromLocalStorage = () => {
   const storedList = JSON.parse(localStorage.getItem('todoList'));
 
@@ -19,7 +36,7 @@ const fetchFromLocalStorage = () => {
 
 fetchFromLocalStorage();
 
-//sets list to Local Storage
+// sets list to Local Storage
 const setToLocalStorage = () => {
   localStorage.setItem('todoList', JSON.stringify(todoList.value));
 };
@@ -31,32 +48,26 @@ const createTodo = (todo) => {
     isCompleted: null,
     isEditing: null,
   });
-
-  setToLocalStorage();
 };
 
-//toggle task completed
+// toggle task completed
 const toggleCompletion = (position) => {
   todoList.value[position].isCompleted = !todoList.value[position].isCompleted;
-  setToLocalStorage();
 };
 
-//toggle edit value (input)
+// toggle edit value (input)
 const toggleEdit = (position) => {
   todoList.value[position].isEditing = !todoList.value[position].isEditing;
-  setToLocalStorage();
 };
 
-//change task title
+// change task title
 const updateTodo = (newValue, position) => {
   todoList.value[position].todo = newValue;
-  setToLocalStorage();
 };
 
-//delete task
+// delete task
 const deleteTodo = (id) => {
   todoList.value = todoList.value.filter((task) => task.id !== id);
-  setToLocalStorage();
 };
 </script>
 
@@ -79,6 +90,11 @@ const deleteTodo = (id) => {
     <p class="no-tasks" v-else>
       <Icon icon="emojione:sad-but-relieved-face" width="22" />
       <span>Você não tem tarefas a fazer. Adicione uma!</span>
+    </p>
+
+    <p v-if="todoList.length > 0 && todoCompleted" class="no-tasks">
+      <Icon icon="emojione-v1:party-popper" width="22" />
+      Você completou todas as suas tarefas! Parabéns!
     </p>
   </main>
 </template>
